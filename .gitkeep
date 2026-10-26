@@ -1,0 +1,91 @@
+
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# =========================
+# Entornos virtuales
+# =========================
+.venv/
+venv/
+env/
+ENV/
+
+# =========================
+# Variables de entorno y secretos
+# =========================
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# =========================
+# Jupyter Notebook
+# =========================
+.ipynb_checkpoints/
+
+# =========================
+# IDE y sistema operativo
+# =========================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================
+# Logs y archivos temporales
+# =========================
+*.log
+logs/
+tmp/
+temp/
+
+# =========================
+# Datasets y datos locales
+# =========================
+data/raw/
+data/interim/
+data/processed/
+datasets/
+*.zip
+*.tar
+*.tar.gz
+*.7z
+
+# =========================
+# Modelos entrenados y checkpoints
+# =========================
+models/*.pt
+models/*.pth
+models/*.ckpt
+models/*.h5
+models/*.keras
+models/*.onnx
+checkpoints/
+runs/
+mlruns/
+
+# =========================
+# Experimentos y cachés
+# =========================
+.cache/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# =========================
+# Configuración local
+# =========================
+*.local
+
