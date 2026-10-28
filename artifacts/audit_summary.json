@@ -1,0 +1,18 @@
+{
+  "n_samples": 87678,
+  "n_complete": 87678,
+  "vocab_size": 758,
+  "families_size": 73,
+  "subgroups_size": 20,
+  "n_tokens_freq_lt5": 90,
+  "seq_len_min": 3,
+  "seq_len_max": 75,
+  "seq_len_mean": 27.458929263897442,
+  "img_width_median": 1272.0,
+  "img_height_median": 143.0,
+  "n_repeated_label_sequences": 3157,
+  "n_samples_in_repeated_sequences": 7118,
+  "n_source_pieces": 61772,
+  "n_leak_free_groups": 58577,
+  "largest_group_size": 194
+}
