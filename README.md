@@ -26,9 +26,7 @@ Las partituras impresas existen como imágenes, pero no como información musica
 - Salida: secuencia estructurada de símbolos musicales.
 - Reconocimiento de **alturas relativas al pentagrama** (primera capacidad que se valida).
 - Predicción mediante **interfaz de consola**.
-
-**Condicional (sujeto a las etiquetas del dataset)**
-- Duraciones y silencios, solo si hay etiquetas suficientes para entrenar y evaluar.
+- Duraciones y silencios.
 - Claves de sol y de fa: se separará la posición relativa de la interpretación musical absoluta. Si no se detecta ninguna clave y se asume la de sol, esto se marcará explícitamente como **supuesto**, nunca como detección confirmada.
 
 **Fuera de la primera versión**
@@ -37,9 +35,11 @@ Las partituras impresas existen como imágenes, pero no como información musica
 
 ## 5. Dataset
 
-**Candidato principal: PrIMuS** (*Printed Images of Music Staves*).
+**Dataset seleccionado: PrIMuS** (*Printed Images of Music Staves*).
 
 Según su documentación pública, contiene 87 678 incipits musicales reales, monódicos y de un solo pentagrama, extraídos de RISM, con las partituras renderizadas como imágenes y representaciones simbólicas codificadas como secuencias. También existe una extensión, **Camera-PrIMuS**, cuyas imágenes se distorsionan para simular fotografías.
+
+**Licencia y uso:** licencia explícita del dataset no encontrada; uso académico con atribución. Los datos no se redistribuyen en este repositorio: se documenta cómo descargarlos desde la fuente original (ver [`dataset.md`](docs/dataset.md)).
 
 ## 6. Arquitectura tentativa
 
@@ -81,6 +81,7 @@ NoteVision/
 ├── LICENSE
 ├── .gitignore
 ├── requirements.txt
+├── artifacts/
 ├── notebooks/
 │   ├── 01_dataset_audit.ipynb
 │   ├── 02_preprocessing.ipynb
@@ -104,7 +105,7 @@ Esta es la estructura propuesta; los archivos se irán creando durante el proyec
 
 ## 10. Requisitos de software previstos
 
-Aún **no se han seleccionado versiones**. Se registrarán en `requirements.txt` cuando se configure el entorno.
+Las versiones registradas en [`requirements.txt`](requirements.txt) corresponden al entorno de Google Colab usado para el entrenamiento (Python X.Y.Z).
 
 - Python
 - Un framework de aprendizaje profundo (por definir)
