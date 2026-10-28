@@ -93,13 +93,11 @@ NoteVision/
 │   └── evaluation.py
 ├── experiments/
 │   └── results.csv
-├── docs/
-│   ├── dataset.md
-│   ├── architecture.md
-│   ├── evaluation.md
-│   └── limitations.md
-└── models/
-    └── model_export.h5
+└── docs/
+    ├── dataset.md
+    ├── architecture.md
+    ├── evaluation.md
+    └── limitations.md
 ```
 
 Esta es la estructura propuesta; los archivos se irán creando durante el proyecto. Los pesos entrenados pueden ser demasiado grandes para GitHub: en ese caso se documentará cómo obtenerlos y dónde colocarlos localmente.
