@@ -2,8 +2,7 @@
 
 Reconocimiento de símbolos musicales en imágenes de partituras impresas mediante aprendizaje profundo.
 
-> **Estado: planificación e implementación inicial (actualizado el 26 de octubre de 2026).**
-> Este repositorio aún no contiene un modelo entrenado, resultados experimentales ni comandos verificados. Las secciones marcadas como *pendiente* se completarán a medida que avance el proyecto.
+> **Estado: planificación e implementación inicial (actualizado el 27 de octubre de 2026).**
 
 ---
 
@@ -13,7 +12,7 @@ NoteVision es un proyecto académico individual que busca desarrollar un modelo 
 
 ## 2. Objetivo general
 
-Entrenar y evaluar un modelo de aprendizaje profundo, implementado con un framework, que reconozca símbolos musicales en imágenes de partituras impresas con un dataset real; mejorar su desempeño mediante experimentos controlados y documentados; y ofrecer predicciones reproducibles desde la consola.
+Entrenar y evaluar un modelo de aprendizaje profundo, implementado con TensorFlow/Keras, que reconozca símbolos musicales en imágenes de partituras impresas con un dataset real; mejorar su desempeño mediante experimentos controlados y documentados; y ofrecer predicciones reproducibles desde la consola.
 
 ## 3. Problema que aborda
 
@@ -49,7 +48,7 @@ Se considera una arquitectura **convolutiva con un componente secuencial**, por 
 - **Componente secuencial (p. ej., BiLSTM):** modelado del orden de los símbolos de izquierda a derecha.
 - **CTC (*Connectionist Temporal Classification*):** función de pérdida que permite entrenar con secuencias de etiquetas sin alineamiento símbolo a símbolo.
 
-El framework de aprendizaje profundo aún **no ha sido seleccionado**.
+El framework seleccionado es **TensorFlow/Keras**. El repositorio de referencia de PrIMuS (`tf-end-to-end`) está escrito para TensorFlow 1.x, por lo que se usa solo como referencia conceptual y no como base de código.
 
 ## 7. Plan de entrenamiento, validación, prueba y mejora
 
@@ -100,16 +99,16 @@ NoteVision/
     └── limitations.md
 ```
 
-Esta es la estructura propuesta; los archivos se irán creando durante el proyecto. Los pesos entrenados pueden ser demasiado grandes para GitHub: en ese caso se documentará cómo obtenerlos y dónde colocarlos localmente.
+Esta es la estructura propuesta; los archivos se irán creando durante el proyecto. El desarrollo se realiza primero en los notebooks (Google Colab) y los scripts de `code/` se exportan de ellos cuando el notebook correspondiente queda estable. Los pesos entrenados pueden ser demasiado grandes para GitHub: en ese caso se documentará cómo obtenerlos y dónde colocarlos localmente.
 
 ## 10. Requisitos de software previstos
 
-Aún **no se han seleccionado versiones**. Se registrarán en `requirements.txt` cuando se configure el entorno.
+El entrenamiento se realiza en **Google Colab**; la predicción por consola se probará también en local (Windows). Las versiones exactas de Python y de las bibliotecas se registrarán en `requirements.txt` a partir del entorno que efectivamente se use (por ejemplo, con `pip freeze` en Colab) cuando esté estable.
 
-- Python
-- Un framework de aprendizaje profundo (por definir)
+- Python 3
+- TensorFlow/Keras
 - Bibliotecas de cálculo numérico y procesamiento de imágenes
-- Jupyter para los notebooks
+- Jupyter / Google Colab para los notebooks
 
 ## 11. Limitaciones y trabajo futuro
 
@@ -126,8 +125,6 @@ Aún **no se han seleccionado versiones**. Se registrarán en `requirements.txt`
 
 - Calvo-Zaragoza, J., & Rizo, D. (2018a). Camera-PrIMuS: Neural end-to-end optical music recognition on realistic monophonic scores. En *Proceedings of the 19th International Society for Music Information Retrieval Conference (ISMIR 2018)* (pp. 248–255). https://ismir2018.ircam.fr/doc/pdfs/33_Paper.pdf
 - Calvo-Zaragoza, J., & Rizo, D. (2018b). End-to-end neural optical music recognition of monophonic scores. *Applied Sciences, 8*(4), Article 606. https://doi.org/10.3390/app8040606
-- Calvo-Zaragoza, J.; Rizo, D. (2018). *Camera-PrIMuS: Neural End-to-End Optical Music Recognition on Realistic Monophonic Scores*. Proceedings of the 19th ISMIR Conference, París, pp. 248–255.
-- Repositorio de código asociado a PrIMuS: https://github.com/OMR-Research/tf-end-to-end
 - Graves, A., Fernández, S., Gomez, F., & Schmidhuber, J. (2006). Connectionist temporal classification: Labelling unsegmented sequence data with recurrent neural networks. En *Proceedings of the 23rd International Conference on Machine Learning* (pp. 369–376). Association for Computing Machinery. https://doi.org/10.1145/1143844.1143891
 - Optical Music Recognition Research. (s. f.). *tf-end-to-end* [Repositorio de código]. GitHub. https://github.com/OMR-Research/tf-end-to-end
 - Pattern Recognition and Artificial Intelligence Group. (s. f.). *The Printed Images of Music Staves (PrIMuS) dataset*. Universidad de Alicante. https://grfia.dlsi.ua.es/primus/
