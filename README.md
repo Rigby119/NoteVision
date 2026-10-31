@@ -2,7 +2,7 @@
 
 Reconocimiento de símbolos musicales en imágenes de partituras impresas mediante aprendizaje profundo.
 
-> **Estado: planificación e implementación inicial (actualizado el 27 de octubre de 2026).**
+> **Estado: implementación inicial (actualizado el 31 de octubre de 2026).**
 
 ---
 
@@ -48,7 +48,7 @@ Se considera una arquitectura **convolutiva con un componente secuencial**, por 
 - **Componente secuencial (p. ej., BiLSTM):** modelado del orden de los símbolos de izquierda a derecha.
 - **CTC (*Connectionist Temporal Classification*):** función de pérdida que permite entrenar con secuencias de etiquetas sin alineamiento símbolo a símbolo.
 
-El framework seleccionado es **TensorFlow/Keras**. El repositorio de referencia de PrIMuS (`tf-end-to-end`) está escrito para TensorFlow 1.x, por lo que se usa solo como referencia conceptual y no como base de código.
+El framework utilizado es **TensorFlow/Keras**. La arquitectura implementada (CRNN) tiene cuatro bloques convolucionales con reducción horizontal ×8, dos capas BiLSTM de 128 unidades por dirección y una capa densa de 759 clases (758 tokens agnósticos más el blanco CTC, en el índice 0). La decodificación es *greedy* CTC.
 
 ## 7. Plan de entrenamiento, validación, prueba y mejora
 
@@ -65,12 +65,15 @@ Los experimentos se registrarán en `experiments/results.csv` y en `docs/`.
 
 ## 8. Métricas previstas
 
-Las métricas definitivas dependerán de las etiquetas disponibles en el dataset. Punto de partida:
+Con las etiquetas agnósticas de PrIMuS (símbolo y posición en el pentagrama, incluyendo duraciones, silencios y claves), las métricas son:
 
-- **Tasa de error de edición de secuencia (CER):** cuánto difiere la secuencia predicha de la referencia.
+- **CER (principal):** distancia de edición entre la secuencia predicha y la de referencia, sumada sobre todo el conjunto, dividida entre el total de tokens de referencia.
 - **Exactitud de secuencia:** proporción de ejemplos cuya secuencia completa coincide con la referencia.
-- **Precisión, recall y F1 por clase:** solo si pueden evaluarse por separado alturas, duraciones o silencios.
-- **Pérdida de entrenamiento y de validación:** para detectar sobreajuste y problemas de convergencia.
+- **CER de forma (`cer_shape`):** el mismo cálculo comparando solo la familia del símbolo (nota, silencio, clave, etc.) e ignorando la posición vertical; separa los errores de símbolo de los de altura.
+- **Recall por familia de símbolo:** aciertos entre apariciones, a partir del alineamiento.
+- **Pérdida de entrenamiento y de validación (CTC):** para detectar sobreajuste y problemas de convergencia.
+
+**Línea base de comparación:** predictores triviales sin imagen (la secuencia más frecuente y la moda por posición), con CER ≈ 0,91 en validación y prueba.
 
 ## 9. Estructura inicial del repositorio
 
@@ -87,10 +90,7 @@ NoteVision/
 │   ├── 03_modeling.ipynb
 │   └── 04_evaluation.ipynb
 ├── code/
-│   ├── dataset_audit.py
-│   ├── preprocessing.py
-│   ├── modeling.py
-│   └── evaluation.py
+│   └── predict.py
 ├── experiments/
 │   └── results.csv
 └── docs/
@@ -100,7 +100,11 @@ NoteVision/
     └── limitations.md
 ```
 
-Esta es la estructura propuesta; los archivos se irán creando durante el proyecto. El desarrollo se realiza primero en los notebooks (Google Colab) y los scripts de `code/` se exportan de ellos cuando el notebook correspondiente queda estable. Los pesos entrenados pueden ser demasiado grandes para GitHub: en ese caso se documentará cómo obtenerlos y dónde colocarlos localmente.
+Esta es la estructura propuesta; los archivos se irán creando durante el proyecto.
+
+El desarrollo se realiza primero en los notebooks (Google Colab); `code/` contiene los scripts que se ejecutan directamente desde la consola.
+
+Los pesos entrenados pueden ser demasiado grandes para GitHub: en ese caso se documentará cómo obtenerlos y dónde colocarlos localmente.
 
 ## 10. Requisitos de software previstos
 
