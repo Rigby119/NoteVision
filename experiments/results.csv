@@ -1,0 +1,2 @@
+exp_id,date,epochs_run,best_epoch,lr_schedule,batch_policy,val_subset_cer,seq_acc,cer_shape,train_time_h,notes
+EXP-00,2026-10-31,8,8,warmup 200 + cosine 1e-3 to 1e-5,bucketed; 48000 px; max 64,0.0073,0.8695,0.006,3.94,Adam clipnorm 5; val subset 2000; early stop patience 3 from epoch 4
