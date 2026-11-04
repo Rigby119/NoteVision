@@ -139,7 +139,9 @@ El entrenamiento se realiza en **Google Colab**; la predicción por consola se p
 - Bibliotecas de cálculo numérico y procesamiento de imágenes (NumPy, pandas, Pillow)
 - Jupyter / Google Colab para los notebooks
 
-## 11. Uso: predicción por consola
+## 11. Uso
+
+### 11.1. Predicción por consola
 
 `code/predict.py` es autocontenido: define la CRNN, aplica el mismo preprocesamiento del entrenamiento, carga los pesos y el vocabulario de `artifacts/model/` y entrega la secuencia de tokens de una o varias imágenes PNG/JPG.
 
@@ -154,6 +156,10 @@ python code/predict.py imagen.png --pitch
 - Si no se predice ninguna clave, el programa **asume la clave de sol y lo marca explícitamente como supuesto**, nunca como detección.
 - Si la imagen, tras reescalarla, es más ancha que cualquiera de las usadas en el entrenamiento, el programa lo advierte.
 
+### 11.2. NoteVision-Web (aplicación web)
+
+[**NoteVision-Web**](https://github.com/Rigby119/NoteVision-Web) es un proyecto complementario, en un repositorio aparte, que permite visualizar el resultado del modelo: se abre una partitura (PDF o imagen), se recorta un sistema, se ejecuta la CRNN y la predicción se muestra como notación musical y se reproduce con audio sintetizado (con exportación a WAV y MIDI). Está hecha con React y FastAPI, procesa todo en memoria y usa los mismos pesos y vocabulario (`best.weights.h5` y `vocab_agnostic.csv`) y las mismas versiones (TensorFlow 2.21.0 y Keras 3.13.2). La instalación y el uso se describen en el README de ese repositorio.
+
 ## 12. Limitaciones y trabajo futuro
 
 **Limitaciones** (detalle en [`limitations.md`](docs/limitations.md))
@@ -165,7 +171,7 @@ python code/predict.py imagen.png --pitch
 
 **Trabajo futuro (fuera de la primera versión)**
 - Evaluación con Camera-PrIMuS.
-- Lectura de PDF multipágina.
+- Lectura automática de PDF multipágina: NoteVision-Web ya abre PDF y permite recortar un sistema a mano; falta localizar pentagramas y compases de forma automática y unir las transcripciones.
 - Partituras manuscritas.
 
 ## 13. Referencias
