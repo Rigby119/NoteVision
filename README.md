@@ -174,6 +174,12 @@ python code/predict.py imagen.png --pitch
 - Lectura automática de PDF multipágina: NoteVision-Web ya abre PDF y permite recortar un sistema a mano; falta localizar pentagramas y compases de forma automática y unir las transcripciones.
 - Partituras manuscritas.
 
+## 13. Reporte académico
+
+El desarrollo del proyecto se documenta también en un reporte académico que presenta el planteamiento del problema, la arquitectura propuesta, la metodología de desarrollo y la evaluación experimental del modelo.
+
+[**Consultar reporte académico de NoteVision (PDF)**](docs/NoteVision.pdf).
+
 ## 13. Referencias
 
 - Calvo-Zaragoza, J., & Rizo, D. (2018a). Camera-PrIMuS: Neural end-to-end optical music recognition on realistic monophonic scores. En *Proceedings of the 19th International Society for Music Information Retrieval Conference (ISMIR 2018)* (pp. 248–255). https://ismir2018.ircam.fr/doc/pdfs/33_Paper.pdf
