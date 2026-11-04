@@ -41,7 +41,6 @@ htmlcov/
 # Deep Learning: models and checkpoints
 # ==========================================
 # Model exports
-*.h5
 *.hdf5
 *.keras
 *.pt
