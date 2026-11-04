@@ -1,8 +1,8 @@
 # Arquitectura y entrenamiento
 
-Este documento describe el modelo de NoteVision, cómo se entrenó y cómo se usa para predecir. Los datos y etiquetas están en [`dataset.md`](dataset.md); las métricas y el análisis de errores están en [`evaluation.md`](evaluation.md).
+Este documento describe el modelo de NoteVision, cómo se entrena y cómo se usa para predecir. Los datos y las etiquetas están en [`dataset.md`](dataset.md); las métricas y el análisis de errores, en [`evaluation.md`](evaluation.md).
 
-> **Estado:** describe el modelo inicial (**EXP-00**). Las variantes posteriores se añadirán en la sección 7.
+> **Estado:** describe el modelo inicial (**EXP-00**). La variante **EXP-01** (reducción horizontal ×4) está en entrenamiento.
 
 ---
 
@@ -69,7 +69,7 @@ flowchart TD
 
 1. Conversión a escala de grises.
 2. Redimensionado a **alto de 128px** conservando la proporción.
-3. Normalización con **tinta = 1** y **fondo = 0**
+3. Normalización con **tinta = 1** y **fondo = 0**.
 4. Relleno con ceros por la derecha hasta el límite de su cubeta de ancho (véase Bucketing: sección 4).
 
 **Salida:** clases 0 a 758.
@@ -102,6 +102,7 @@ Las capas BatchNorm añaden además 960 parámetros no entrenables (medias y var
 
 - **Máscara de ancho:** la longitud válida de cada imagen en la secuencia es `ancho // 8`, y las dos BiLSTM la reciben como máscara para ignorar el relleno. Las convoluciones y BatchNorm sí procesan el relleno (son ceros, fondo).
 - **Restricción de CTC:** la secuencia de fotogramas debe ser al menos tan larga como la etiqueta (y más si hay tokens consecutivos idénticos, que necesitan un blanco entre ellos). Con x8, un pentagrama típico de 1000px genera unos 125 fotogramas para etiquetas de hasta 75 tokens.
+- **Pérdida:** la pérdida de entrenamiento es la media sobre el lote de la log-verosimilitud negativa CTC por secuencia (`tf.nn.ctc_loss`), que suma la probabilidad de todos los alineamientos posibles entre los fotogramas y la etiqueta.
 - **Decodificación *greedy*:** `argmax` por fotograma, fusión de repetidos consecutivos, eliminación del blanco y resta de 1 a cada clase para recuperar el identificador del token.
 
 ## 4. Entrenamiento (configuración de EXP-00)
@@ -146,7 +147,37 @@ Las capas BatchNorm añaden además 960 parámetros no entrenables (medias y var
 
 ## 7. Cambios experimentales
 
-*(Pendiente: se completará con la hipótesis, la configuración y los resultados de EXP-01, comparados con EXP-00 sobre las mismas particiones y métricas.)*
+### 7.1. EXP-01: resolución horizontal (×4)
+
+**Motivación.** El análisis de errores de EXP-00 ([`evaluation.md`](evaluation.md), sección 6) muestra que el 74 % de los errores son omisiones o inserciones, concentradas en símbolos pequeños o dibujados junto a otros (becuadros, bemoles, ligaduras, notas de adorno). La brecha entre entrenamiento y validación es pequeña (CER 0,0057 frente a 0,0067), así que no hay sobreajuste y la regularización o el aumento de datos no son la primera mejora a probar.
+
+**Hipótesis.** Con una reducción horizontal de ×8, cada fotograma de la CTC cubre unos 8 px y solo puede emitir un símbolo, de modo que varios símbolos próximos compiten por el mismo fotograma. Reducir la compresión a ×4 mejora el reconocimiento de esos símbolos. El mecanismo es una hipótesis: el análisis solo muestra que esos símbolos son la principal fuente de omisiones.
+
+**Cambio único respecto a EXP-00:**
+
+| Aspecto | EXP-00 | EXP-01 |
+|---|---|---|
+| Reducción horizontal | ×8 | ×4 |
+| Pooling de los cuatro bloques | `(2,2)`, `(2,2)`, `(2,2)`, `(2,1)` | `(2,2)`, `(2,2)`, `(2,1)`, `(2,1)` |
+| Longitud lógica (fotogramas) | `ancho // 8` | `ancho // 4` |
+| Fotogramas para una imagen de 1 000 px | 125 | 250 |
+| Parámetros entrenables | 1 896 407 | 1 896 407 (sin cambio) |
+
+Todo lo demás se mantiene: datos, particiones, semilla, *pipeline* por cubetas, optimizador, calendario de tasa de aprendizaje, 8 épocas, submuestra de validación y criterio de mejor modelo.
+
+**Criterio de éxito** (sobre la validación completa):
+
+1. CER al menos un 10 % menor que EXP-00 (de 0,0067 a 0,0060 o menos).
+2. Mayor recall de becuadros (hoy 0,768) y de ligaduras, y menos omisiones.
+3. Como métrica secundaria, CER sin barra final, que neutraliza la inconsistencia de etiquetas descrita en `evaluation.md`.
+
+Cada experimento es una sola corrida; por eso el umbral del 10 %.
+
+**Costo esperado.** La CTC y las LSTM procesan el doble de fotogramas, por lo que el entrenamiento se estima en 6 a 8 h (EXP-00 tardó 3,94 h). Es una estimación, no una medición.
+
+**Estado.** En entrenamiento (`notebooks/03_01_modeling.ipynb`). Resultados pendientes.
+
+**Si EXP-01 resulta ganador.** `code/predict.py` debe actualizarse con el nuevo factor de reducción y la disposición de *pooling*, y los pesos de `artifacts/model/` se reemplazan por los de EXP-01. Los antiguos pesos pasan a `experiments/models/`.
 
 ## Referencias
 

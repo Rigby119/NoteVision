@@ -2,7 +2,7 @@
 
 Reconocimiento de símbolos musicales en imágenes de partituras impresas mediante aprendizaje profundo.
 
-> **Estado: implementación inicial (actualizado el 31 de octubre de 2026).**
+> **Estado: modelo inicial (EXP-00) entrenado y evaluado en validación; EXP-01 en curso (actualizado el 3 de noviembre de 2026).**
 
 ---
 
@@ -38,32 +38,38 @@ Las partituras impresas existen como imágenes, pero no como información musica
 
 Según su documentación pública, contiene 87 678 incipits musicales reales, monódicos y de un solo pentagrama, extraídos de RISM, con las partituras renderizadas como imágenes y representaciones simbólicas codificadas como secuencias. También existe una extensión, **Camera-PrIMuS**, cuyas imágenes se distorsionan para simular fotografías.
 
+Se usa la representación **agnóstica** (símbolo y posición en el pentagrama, por ejemplo `note.quarter-S2`), con un vocabulario de 758 tokens y etiquetas de hasta 75 tokens. Las particiones son 80/10/10 por grupo, para evitar fuga de datos (semilla 42): 70 138 imágenes de entrenamiento, 8 772 de validación y 8 768 de prueba.
+
 **Licencia y uso:** licencia explícita del dataset no encontrada; uso académico con atribución. Los datos no se redistribuyen en este repositorio: se documenta cómo descargarlos desde la fuente original (ver [`dataset.md`](docs/dataset.md)).
 
-## 6. Arquitectura tentativa
+**Calidad de las etiquetas:** la evaluación detectó inconsistencias en las referencias (por ejemplo, en la barra de compás final); se describen en [`evaluation.md`](docs/evaluation.md) y [`limitations.md`](docs/limitations.md).
 
-Se considera una arquitectura **convolutiva con un componente secuencial**, por ejemplo **CNN + BiLSTM + CTC**:
+## 6. Arquitectura
+
+Se utiliza una arquitectura **convolutiva con un componente secuencial**, **CNN + BiLSTM + CTC** (CRNN):
 
 - **CNN:** extracción de características visuales de la imagen.
-- **Componente secuencial (p. ej., BiLSTM):** modelado del orden de los símbolos de izquierda a derecha.
+- **Componente secuencial (BiLSTM):** modelado del orden de los símbolos de izquierda a derecha.
 - **CTC (*Connectionist Temporal Classification*):** función de pérdida que permite entrenar con secuencias de etiquetas sin alineamiento símbolo a símbolo.
 
-El framework utilizado es **TensorFlow/Keras**. La arquitectura implementada (CRNN) tiene cuatro bloques convolucionales con reducción horizontal ×8, dos capas BiLSTM de 128 unidades por dirección y una capa densa de 759 clases (758 tokens agnósticos más el blanco CTC, en el índice 0). La decodificación es *greedy* CTC.
+El framework utilizado es **TensorFlow/Keras**. La arquitectura implementada (CRNN) tiene cuatro bloques convolucionales con reducción horizontal ×8, dos capas BiLSTM de 128 unidades por dirección y una capa densa de 759 clases (758 tokens agnósticos más el blanco CTC, en el índice 0): **1 896 407 parámetros entrenables** (≈ 8 MB). La decodificación es *greedy* CTC. El detalle de capas, entrenamiento y la propuesta de EXP-01 está en [`architecture.md`](docs/architecture.md).
 
 ## 7. Plan de entrenamiento, validación, prueba y mejora
 
-| Etapa | Qué se hará | Qué se registrará |
-|---|---|---|
-| Línea base (EXP-00) | Entrenar el primer modelo; depurar primero con una muestra reproducible y luego ampliar | Métricas, configuración, tiempo de entrenamiento y ejemplos de errores |
-| Experimento 1 (EXP-01) | Probar el efecto de la regularización o del aumento de datos, manteniendo lo demás constante | Qué cambió y si mejoró la generalización |
-| Experimento 2 (EXP-02), si hay tiempo | Ajuste de hiperparámetros | Diferencias frente a la línea base |
-| Experimento 3 (EXP-03), condicional | Otra arquitectura, solo si los resultados anteriores lo justifican | Si el beneficio compensa la complejidad |
-| Comparación final | Modelo inicial frente al mejor candidato, con las mismas particiones y métricas | Tabla comparativa y conclusiones |
-| Predicción | Probar con imágenes no vistas | Imagen, predicción, referencia esperada y errores observados |
+| Etapa | Qué se hará | Qué se registrará | Estado |
+|---|---|---|---|
+| Línea base (EXP-00) | Entrenar el primer modelo; depurar primero con una muestra reproducible y luego ampliar | Métricas, configuración, tiempo de entrenamiento y ejemplos de errores | Completado |
+| Experimento 1 (EXP-01) | Probar si reducir la compresión horizontal de ×8 a ×4 mejora el reconocimiento de símbolos pequeños (hipótesis derivada del análisis de errores), manteniendo lo demás constante | Qué cambió y si mejoró el CER y el recall por familia | En curso |
+| Experimento 2 (EXP-02), si hay tiempo | Ajuste de hiperparámetros | Diferencias frente a la línea base | Pendiente |
+| Experimento 3 (EXP-03), condicional | Otra arquitectura, solo si los resultados anteriores lo justifican | Si el beneficio compensa la complejidad | Pendiente |
+| Comparación final | Modelo inicial frente al mejor candidato, con las mismas particiones y métricas; el conjunto de prueba se evalúa una sola vez | Tabla comparativa y conclusiones | Pendiente |
+| Predicción | Probar con imágenes no vistas | Imagen, predicción, referencia esperada y errores observados | Pendiente |
+
+El protocolo es común a todos los experimentos: 8 épocas, el mismo calendario de tasa de aprendizaje, una submuestra fija de 2 000 imágenes de validación y el mismo criterio de mejor modelo. La regularización o el aumento de datos no fueron la primera mejora porque EXP-00 no muestra sobreajuste (ver [`evaluation.md`](docs/evaluation.md)).
 
 Los experimentos se registrarán en `experiments/results.csv` y en `docs/`.
 
-## 8. Métricas previstas
+## 8. Métricas
 
 Con las etiquetas agnósticas de PrIMuS (símbolo y posición en el pentagrama, incluyendo duraciones, silencios y claves), las métricas son:
 
@@ -71,11 +77,28 @@ Con las etiquetas agnósticas de PrIMuS (símbolo y posición en el pentagrama, 
 - **Exactitud de secuencia:** proporción de ejemplos cuya secuencia completa coincide con la referencia.
 - **CER de forma (`cer_shape`):** el mismo cálculo comparando solo la familia del símbolo (nota, silencio, clave, etc.) e ignorando la posición vertical; separa los errores de símbolo de los de altura.
 - **Recall por familia de símbolo:** aciertos entre apariciones, a partir del alineamiento.
+- **CER sin barra final (secundaria):** el CER ignorando una barra de compás final en referencia y predicción, para neutralizar una inconsistencia de las etiquetas.
 - **Pérdida de entrenamiento y de validación (CTC):** para detectar sobreajuste y problemas de convergencia.
 
 **Línea base de comparación:** predictores triviales sin imagen (la secuencia más frecuente y la moda por posición), con CER ≈ 0,91 en validación y prueba.
 
-## 9. Estructura inicial del repositorio
+### 8.1. Resultados de EXP-00 (validación)
+
+| Conjunto | CER | Exactitud de secuencia | CER de forma |
+|---|---|---|---|
+| Predictor trivial (validación) | ≈ 0,91 | – | – |
+| Entrenamiento (2 000 aleatorias) | 0,0057 | 0,8995 | 0,0044 |
+| Validación, submuestra (2 000) | 0,0073 | 0,870 | 0,0060 |
+| **Validación completa (8 772)** | **0,0067** | **0,8805** | **0,0054** |
+
+- Entrenamiento de 8 épocas en Google Colab (GPU T4): 3,94 h; mejor modelo en la época 8.
+- La brecha entre entrenamiento y validación es pequeña (no hay sobreajuste).
+- El 74 % de los errores son omisiones o inserciones, sobre todo de becuadros, bemoles, ligaduras, notas de adorno y la barra final; solo el 17 % son errores de altura, casi siempre de uno o dos pasos.
+- El conjunto de prueba aún no se ha utilizado: se evaluará una sola vez, al elegir el modelo final.
+
+Detalle completo en [`evaluation.md`](docs/evaluation.md).
+
+## 9. Estructura del repositorio
 
 ```
 NoteVision/
@@ -84,6 +107,8 @@ NoteVision/
 ├── .gitignore
 ├── requirements.txt
 ├── artifacts/
+│   └── model/
+│       └── best.weights.h5
 ├── notebooks/
 │   ├── 01_dataset_audit.ipynb
 │   ├── 02_preprocessing.ipynb
@@ -97,36 +122,53 @@ NoteVision/
     ├── dataset.md
     ├── architecture.md
     ├── evaluation.md
-    └── limitations.md
+    ├── limitations.md
+    └── NoteVision.pdf          (paper académico)
 ```
-
-Esta es la estructura propuesta; los archivos se irán creando durante el proyecto.
 
 El desarrollo se realiza primero en los notebooks (Google Colab); `code/` contiene los scripts que se ejecutan directamente desde la consola.
 
-Los pesos entrenados pueden ser demasiado grandes para GitHub: en ese caso se documentará cómo obtenerlos y dónde colocarlos localmente.
+De `artifacts/` solo se versiona `artifacts/model/` (pesos y vocabulario, ≈ 8 MB); el resto de los artefactos (particiones, puntos de control, resultados de evaluación) vive en Google Drive y no se incluye en Git.
 
-## 10. Requisitos de software previstos
+## 10. Requisitos de software
 
-El entrenamiento se realiza en **Google Colab**; la predicción por consola se probará también en local (Windows). Las versiones exactas de Python y de las bibliotecas se registrarán en `requirements.txt` a partir del entorno que efectivamente se use cuando esté estable.
+El entrenamiento se realiza en **Google Colab**; la predicción por consola se probará también en local (Windows). Las versiones usadas en Colab son TensorFlow 2.21.0 y Keras 3.13.2; las versiones exactas de Python y de las bibliotecas se registrarán en `requirements.txt` a partir del entorno que efectivamente se use cuando esté estable.
 
 - Python 3
 - TensorFlow/Keras
-- Bibliotecas de cálculo numérico y procesamiento de imágenes
+- Bibliotecas de cálculo numérico y procesamiento de imágenes (NumPy, pandas, Pillow)
 - Jupyter / Google Colab para los notebooks
 
-## 11. Limitaciones y trabajo futuro
+## 11. Uso: predicción por consola
 
-**Limitaciones previstas**
-- La cobertura de etiquetas del dataset puede limitar qué se puede aprender y evaluar (duraciones, silencios, claves).
-- El dataset candidato contiene partituras impresas y sintéticas; el desempeño en imágenes reales o distintas no está garantizado.
+`code/predict.py` es autocontenido: define la CRNN, aplica el mismo preprocesamiento del entrenamiento, carga los pesos y el vocabulario de `artifacts/model/` y entrega la secuencia de tokens de una o varias imágenes PNG/JPG.
+
+```
+python code/predict.py ruta/imagen.png
+python code/predict.py imagen1.png imagen2.jpg --json
+python code/predict.py imagen.png --pitch
+```
+
+- `--json`: imprime la salida en JSON.
+- `--pitch`: añade letra y octava a las notas a partir de la posición y la clave; **no** aplica armadura ni alteraciones.
+- Si no se predice ninguna clave, el programa **asume la clave de sol y lo marca explícitamente como supuesto**, nunca como detección.
+- Si la imagen, tras reescalarla, es más ancha que cualquiera de las usadas en el entrenamiento, el programa lo advierte.
+
+## 12. Limitaciones y trabajo futuro
+
+**Limitaciones** (detalle en [`limitations.md`](docs/limitations.md))
+- Las imágenes de PrIMuS son impresas y sintéticas; el desempeño en fotografías o escaneos no está garantizado.
+- Las etiquetas del dataset tienen inconsistencias (barra final, haces de longitud cero) que limitan el CER alcanzable.
+- El modelo aún omite o inventa símbolos pequeños (becuadros, ligaduras, notas de adorno).
+- Cada experimento es una sola corrida, y el conjunto de prueba no se ha utilizado.
+- Alcance: un pentagrama monofónico impreso; las posiciones son relativas al pentagrama.
 
 **Trabajo futuro (fuera de la primera versión)**
-- Interfaz web.
+- Evaluación con Camera-PrIMuS.
 - Lectura de PDF multipágina.
 - Partituras manuscritas.
 
-## 12. Referencias
+## 13. Referencias
 
 - Calvo-Zaragoza, J., & Rizo, D. (2018a). Camera-PrIMuS: Neural end-to-end optical music recognition on realistic monophonic scores. En *Proceedings of the 19th International Society for Music Information Retrieval Conference (ISMIR 2018)* (pp. 248–255). https://ismir2018.ircam.fr/doc/pdfs/33_Paper.pdf
 - Calvo-Zaragoza, J., & Rizo, D. (2018b). End-to-end neural optical music recognition of monophonic scores. *Applied Sciences, 8*(4), Article 606. https://doi.org/10.3390/app8040606
