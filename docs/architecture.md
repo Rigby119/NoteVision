@@ -177,7 +177,7 @@ Cada experimento es una sola corrida; por eso el umbral del 10 %.
 
 **Estado.** En entrenamiento (`notebooks/03_01_modeling.ipynb`). Resultados pendientes.
 
-**Si EXP-01 resulta ganador.** `code/predict.py` debe actualizarse con el nuevo factor de reducción y la disposición de *pooling*, y los pesos de `artifacts/model/` se reemplazan por los de EXP-01. Los antiguos pesos pasan a `experiments/models/`.
+**Si EXP-01 resulta ganador.** `code/predict.py` y el predictor de **NoteVision-Web** `backend/omr.py` deben actualizarse con el nuevo factor de reducción y la disposición de *pooling*, y los pesos de `artifacts/model/` se reemplazan por los de EXP-01. Los antiguos pesos pasan a `experiments/models/`.
 
 ## Referencias
 
